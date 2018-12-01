@@ -12,6 +12,7 @@ Account::Account(const Date &date, const string &id): id(id), balance(0)
 {
 	date.show();
 	cout << "\t#" << id << " is created." << endl;
+	total++;
 }
 
 void Account::record(const Date &date, double amount, const string &desc)
@@ -47,9 +48,14 @@ void SavingsAccount::withdraw(const Date &date, double amount, const string &des
 
 void SavingsAccount::settle(const Date &date)
 {
-	double interest = acc.getSum(date) * rate / date.distance(Date(date.getYear() - 1, 1, 1)); //interest per year
-	if (interest != 0) record(date, interest, "interest");
-	acc.reset(date, getBalance());
+	if (date.getMonth() == 1) 
+	{
+		double interest = acc.getSum(date) * rate / (date - Date(date.getYear() - 1, 1, 1));
+		//interest per year
+		if (interest != 0) record(date, interest, "interest");
+		acc.reset(date, getBalance());
+	}
+	
 }
 
 //Credit
@@ -69,7 +75,7 @@ void CreditAccount::deposit(const Date &date, double amount, const string &desc)
 	acc.change(date, getDebt());
 }
 
-void CreditAccount::withdraw(const Date &date, double amount, const string &desc) 
+void CreditAccount::withdraw(const Date &date, double amount, const string &desc)
 {
 	if (amount - getBalance() > credit) error("Error: not enough money!");
 	else

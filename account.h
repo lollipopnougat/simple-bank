@@ -14,7 +14,10 @@ public:
 	const std::string &getId() {return id;} //account numbers
 	double getBalance() const {return balance;} //remain money
 	static double getTotal() {return total;}
-	void show() const;
+	virtual void deposit(const Date &date, double amount, const std::string &desc) = 0; //put money in
+	virtual void withdraw(const Date &date, double amount, const std::string &desc) = 0; //take money back
+	virtual void settle(const Date &date) = 0; //calculate interest
+	virtual void show() const;
 private:
 	std::string id;
 	double balance;
@@ -23,6 +26,7 @@ protected:
 	Account(const Date &date, const std::string &id); //bulid function for Derived Class
 	void record(const Date &date, double amount, const std::string &desc);
 	void error(const std::string &msg) const;
+
 };
 
 class SavingsAccount: public Account
