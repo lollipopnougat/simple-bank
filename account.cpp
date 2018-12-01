@@ -47,7 +47,7 @@ void SavingsAccount::withdraw(const Date &date, double amount, const string &des
 
 void SavingsAccount::settle(const Date &date)
 {
-	double interest = acc.getSum(date) * rate / date.distance(Date(date.getYear() - 1, 1, 1));
+	double interest = acc.getSum(date) * rate / date.distance(Date(date.getYear() - 1, 1, 1)); //interest per year
 	if (interest != 0) record(date, interest, "interest");
 	acc.reset(date, getBalance());
 }
@@ -69,7 +69,7 @@ void CreditAccount::deposit(const Date &date, double amount, const string &desc)
 	acc.change(date, getDebt());
 }
 
-void CreditAccount::withdraw(const Date &date, double amount, const string &desc)
+void CreditAccount::withdraw(const Date &date, double amount, const string &desc) 
 {
 	if (amount - getBalance() > credit) error("Error: not enough money!");
 	else
@@ -79,7 +79,7 @@ void CreditAccount::withdraw(const Date &date, double amount, const string &desc
 	}
 }
 
-void CreditAccount::settle(const Date &date)
+void CreditAccount::settle(const Date &date) //each month's 1st day run this function
 {
 	double interest = acc.getSum(date) * rate;
 	if (interest != 0) record(date, interest, "interest");
