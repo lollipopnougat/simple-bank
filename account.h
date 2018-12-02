@@ -2,26 +2,44 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 #include <string>
+#include <map>
 #include "date.h"
 #include "accumulator.h"
 
+class Account;
+class AccountRecord
+{
+public:
+	AccountRecord(const Date &date, Account *account, double amount, double balance, std::string &desc);
+	~AccountRecord() {}
+	void show() const;
+private:
+	Date date;
+	Account *account;
+	double amount;
+	double balance;
+	std::string desc;
+};
+typedef std::multimap<Date, AccountRecord> RecordMap;
 
 class Account
 {
 public:
 	//Account(const Date &date, const std::string &id);
 	//~Account() {}
-	const std::string &getId() {return id;} //account numbers
+	std::string &getId() {return id;} //account numbers
 	double getBalance() const {return balance;} //remain money
 	static double getTotal() {return total;}
 	virtual void deposit(const Date &date, double amount, const std::string &desc) = 0; //put money in
 	virtual void withdraw(const Date &date, double amount, const std::string &desc) = 0; //take money back
 	virtual void settle(const Date &date) = 0; //calculate interest
 	virtual void show() const;
+	static void query(const Date &begin, const Date &end);
 private:
 	std::string id;
 	double balance;
 	static double total;
+	static RecordMap recordMap;
 protected:
 	Account(const Date &date, const std::string &id); //bulid function for Derived Class
 	void record(const Date &date, double amount, const std::string &desc);

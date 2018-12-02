@@ -2,11 +2,22 @@
 #include "account.h"
 #include <cmath>
 #include <iostream>
+#include <utility>
 
 using namespace std;
 
-double Account::total = 0;
+//AccountRecord
+AccountRecord::AccountRecord(const Date &date, Account *account, double amount, double balance, std::string &desc):
+	date(date), account(account), amount(amount), balance(balance), desc(desc) {}
 
+void AccountRecord::show() const
+{
+	date.show();
+	cout << "\t#" << account->getId() << ends << amount << ends << balance << ends << desc << endl; 
+}
+
+double Account::total = 0;
+RecordMap Account::recordMap;
 //Account
 Account::Account(const Date &date, const string &id): id(id), balance(0)
 {
@@ -26,6 +37,17 @@ void Account::record(const Date &date, double amount, const string &desc)
 void Account::show() const {cout << "#" << id << "\tBalance: " << balance;}
 
 void Account::error(const string &msg) const {cout << "Error (#" << id << "):" << msg << endl;}
+
+void Account::query(const Date &begin, const Date &end)
+{
+	if (begin < end || begin == end )
+	{
+		auto it1 = recordMap.lower_bound(begin);
+		auto it2 = recordMap.upper_bound(end);
+		for (auto it = it1; it != it2; it++)
+			it->second.show();
+	}
+}
 
 //SavingsAccount
 SavingsAccount::SavingsAccount(const Date &date, const string &id, double rate): Account(date, id), rate(rate), acc(date, 0) {}
@@ -48,14 +70,14 @@ void SavingsAccount::withdraw(const Date &date, double amount, const string &des
 
 void SavingsAccount::settle(const Date &date)
 {
-	if (date.getMonth() == 1) 
+	if (date.getMonth() == 1)
 	{
 		double interest = acc.getSum(date) * rate / (date - Date(date.getYear() - 1, 1, 1));
 		//interest per year
 		if (interest != 0) record(date, interest, "interest");
 		acc.reset(date, getBalance());
 	}
-	
+
 }
 
 //Credit

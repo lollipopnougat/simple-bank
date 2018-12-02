@@ -1,26 +1,33 @@
 #include "account.h"
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include <conio.h>
 using namespace std;
 
 
+struct deleter
+{
+	template<typename T> 
+	void operator () (T *p) {delete p;}
+};
 
 int main()
 {
+	int index, day;
+	double amount, credit, rate, fee;
+	string id, desc;
+	char type;
 	try
 	{
-		int index, day, amount;
-		string desc;
 		Date date(2008, 11, 1);
-		SavingsAccount sa1(date, "S3755217", 0.015);
-		SavingsAccount sa2(date, "02342342", 0.015);
-		CreditAccount ca(date, "C5392394", 10000, 0.0005, 50);
-		Account *accounts[] = {&sa1, &sa2, &ca};
-		const int n = sizeof(accounts) / sizeof(Account*); //sum of accounts
+		vector<Account*> accounts;
+		Account *account;
+		Date date1, date2;
 		bool fl = true;
 		while (fl)
 		{
-			cout << "Deposit(D) Withdraw(W) Show(S) Change_day(C) Next_month(N) Exit(E)" << endl;
+			cout << "Add_account(A) Deposit(D) Withdraw(W) Show(S) Change_day(C) Next_month(N) Query(Q) Exit(E)" << endl;
 			char cmd;
 			date.show();
 			cout << "\tTotal: " << Account::getTotal() << "\nCommand >>>";
@@ -29,19 +36,34 @@ int main()
 			cout << cmd << endl;
 			switch (cmd)
 			{
+				case 'A':	cout << "Please select a type('S' for Saving Others for Credit) and Input your ID: " << endl;
+							cin >> type >> id;
+							if (type == 'S' || type == 's') 
+							{
+								cout << "Please input rate: ";
+								cin >> rate;
+								account = new SavingsAccount(date, id, rate);
+							}
+							else 
+							{
+								cout << "Please input credit rate and fee: ";
+								cin >> credit >> rate >> fee;
+								account = new CreditAccount(date, id, credit, rate, fee);
+							}
+							accounts.push_back(account); break;
 				case 'D': 	cout << "Please input your ID number and Amount of money and Info: ";
 							cin >> index >> amount;
-							if(index >= n) throw string("Invalid ID.");
+							if(index >= accounts.size()) throw string("Invalid ID.");
 							fflush(stdin); //clear Input Buffer also //cin.clear();cin.sync();
 							getline(cin, desc);
 							accounts[index]->deposit(date, amount, desc); break;
 				case 'W': 	cout << "Please input your ID number and Amount of money and Info: ";
 							cin >> index >> amount;
-							if(index >= n) throw string("Invalid ID.");
+							if(index >= accounts.size()) throw string("Invalid ID.");
 							fflush(stdin); //clear Input Buffer also //cin.clear();cin.sync();
 							getline(cin, desc);
 							accounts[index]->withdraw(date, amount, desc); break;
-				case 'S': 	for (int i = 0; i < n; i++)
+				case 'S': 	for (int i = 0; i < accounts.size(); i++)
 							{
 								cout << "[" << i << "]";
 								accounts[i]->show();
@@ -54,17 +76,22 @@ int main()
 							else date = Date(date.getYear(), date.getMonth(), day); break;
 				case 'N': 	if (date.getMonth() == 12) date = Date(date.getYear() + 1, 1, 1);
 							else date = Date(date.getYear(), date.getMonth() + 1, 1);
-							for (int i = 0; i < n; i++)
-								accounts[i]->settle(date); break;
-				case 'E': fl = false; break;
+							for (auto it = accounts.begin(); it != accounts.end(); it++)
+								(*it)->settle(date); break;
+				case 'E':	fl = false; break;
+				case 'Q':	date1 = Date::read();
+							date2 = Date::read();
+							Account::query(date1, date2); break;
 				default: throw string("Wrong Input.");
 			}
 		}
+		for_each (accounts.begin(), accounts.end(),deleter());
 	}
 	catch (string &st)
 	{
 		cout << "Error!" << st << endl;
 	}
+	
 
 	// sa1.deposit(Date(2008, 11, 5), 5000, "salary");
 	// ca.withdraw(Date(2008, 11, 15), 2000, "buy a cell");
